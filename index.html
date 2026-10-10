@@ -1,114 +1,22 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DTV Mobile Auto Player</title>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<title>DTV Live</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#090616;color:#fff;font-family:system-ui;min-height:100vh;display:flex;flex-direction:column}
-.top{padding:12px 14px;background:#15102a;border-bottom:1px solid #2a2250;display:flex;justify-content:space-between;align-items:center}
-.top b{font-size:14px;color:#a99bd6}
-.top span{font-size:10px;color:#6b6590}
-.box{position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden}
-video{width:100%;height:100%;background:#000}
-.mask{position:absolute;top:8px;right:8px;width:19%;height:28%;background:#000;z-index:10;border-radius:5px;pointer-events:none}
-.status{padding:10px 14px;font-size:12px;color:#8a81a8;background:#0f0a24;border-bottom:1px solid #1a1440}
-.btn{background:#6d5cff;color:#fff;border:0;padding:8px 16px;border-radius:20px;font-size:12px}
-.center{display:flex;align-items:center;justify-content:center;flex:1;padding:20px;text-align:center}
+body{background:#000;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.wrap{position:relative;width:100%;max-width:1000px;aspect-ratio:16/9;background:#000}
+.wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.mask{position:absolute;top:8px;right:8px;width:20%;height:30%;background:#000;z-index:10;pointer-events:none}
 </style>
 </head>
 <body>
-<div class="top">
-  <b>DTV CLEAN • MOBILE</b>
-  <span>Logo Hidden</span>
+<div class="wrap">
+<!-- Ye link proxy se load hoga, isliye GitHub par block nahi hoga -->
+<iframe src="https://api.allorigins.win/raw?url=https://i.mdtv.dpdns.org/player?id=3QwMmTkvz27QClsCsIM0%26server=1" allowfullscreen allow="autoplay; fullscreen; encrypted-media"></iframe>
+<div class="mask"></div>
 </div>
-
-<div class="box">
-  <video id="v" controls autoplay playsinline></video>
-  <div class="mask"></div>
-</div>
-
-<div class="status" id="st">🔍 Auto link nikal raha hu... 5 sec wait karo</div>
-
-<div class="center" id="center">
-  <div>
-    <div style="color:#6b6590;font-size:12px;margin-bottom:10px">Mobile se hi chalega, koi PC nahi chahiye</div>
-    <button class="btn" onclick="start()">▶ Auto Play</button>
-    <div style="margin-top:12px"><button class="btn" style="background:#2a2250" onclick="manual()">Manual m3u8 dalo</button></div>
-  </div>
-</div>
-
-<script>
-const PLAYER_URL = "https://i.mdtv.dpdns.org/player?id=3QwMmTkvz27QClsCsIM0&server=1";
-let hls;
-
-async function start(){
-  document.getElementById('st').innerText = "⏳ Proxy se player load kar raha hu...";
-  const proxies = [
-    "https://api.allorigins.win/get?url=",
-    "https://thingproxy.freeboard.name/fetch/",
-    "https://api.codetabs.com/v1/proxy?quest="
-  ];
-  
-  for(let p of proxies){
-    try{
-      let res = await fetch(p + encodeURIComponent(PLAYER_URL));
-      let text = "";
-      if(p.includes("allorigins")){
-        let j = await res.json();
-        text = j.contents || "";
-      } else {
-        text = await res.text();
-      }
-      // m3u8 nikalo
-      let m = text.match(/https?:\/\/[^\s"'<>]+\.m3u8[^\s"'<>]*/);
-      if(m){
-        let url = m[0];
-        document.getElementById('st').innerText = "✅ Link mil gaya: " + url.substring(0,50) + "...";
-        playM3U8(url);
-        return;
-      }
-    }catch(e){}
-  }
-  document.getElementById('st').innerText = "❌ Auto nahi mila, Manual try karo ya server 2 use karo";
-}
-
-function playM3U8(url){
-  const video = document.getElementById('v');
-  document.getElementById('center').style.display='none';
-  if(Hls.isSupported()){
-    if(hls) hls.destroy();
-    hls = new Hls();
-    hls.loadSource(url);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED,()=>video.play());
-  } else if(video.canPlayType('application/vnd.apple.mpegurl')){
-    video.src = url;
-    video.play();
-  }
-  // GitHub ke liye hash save karo taaki public link direct chale
-  location.hash = btoa(url);
-}
-
-function manual(){
-  let u = prompt("m3u8 link paste karo\n\nMobile me link kaise nikale:\n1. App install karo '1DM Browser'\n2. Usme ye player kholo\n3. Video chalao, 1DM khud m3u8 pakad lega\n4. Link copy karke yaha paste karo");
-  if(u) playM3U8(u.trim());
-}
-
-// Agar pehle se hash me link hai to auto chalao (GitHub public ke liye)
-window.onload = ()=>{
-  if(location.hash.length > 20){
-    try{
-      let u = atob(location.hash.slice(1));
-      if(u.includes(".m3u8")){ playM3U8(u); document.getElementById('st').innerText="✅ Saved link se chal raha hai"; }
-      else start();
-    }catch(e){ start(); }
-  } else {
-    start();
-  }
-}
-</script>
 </body>
 </html>
