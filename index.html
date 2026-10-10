@@ -2,83 +2,119 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Live Crop Player - Single File</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Live Browser Server - All in One</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;color:#fff;font-family:system-ui,Arial;min-height:100vh;display:flex;flex-direction:column}
-.header{padding:12px;background:#111;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-bottom:1px solid #222}
-.header input[type=text]{flex:1;min-width:200px;padding:10px 12px;border-radius:8px;border:1px solid #333;background:#1a1a1a;color:#fff;outline:none}
-.header button{padding:10px 16px;border-radius:8px;border:0;background:#fff;color:#000;font-weight:600;cursor:pointer}
-.controls{padding:10px;background:#0f0f0f;display:grid;grid-template-columns:1fr 1fr;gap:10px;border-bottom:1px solid #222}
-.ctrl label{font-size:11px;color:#999;display:block;margin-bottom:4px}
-.ctrl input{width:100%}
-.player-wrap{flex:1;position:relative;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:60vh}
-.player-wrap iframe{width:100%;height:100%;border:0;aspect-ratio:16/9;max-height:85vh}
-.crop{position:absolute;background:#000;z-index:5;pointer-events:none}
-#crop-top{top:0;left:0;width:100%}
-#crop-bottom{bottom:0;left:0;width:100%}
-#crop-left{top:0;left:0;height:100%}
-#crop-right{top:0;right:0;height:100%}
-#crop-custom{top:0;right:0;background:#000}
-.hint{padding:8px 12px;font-size:11px;color:#666;text-align:center;background:#0a0a0a}
+body{background:#0a0a0a;color:#fff;font-family:system-ui,Segoe UI,Arial;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.browser-bar{background:#161616;padding:8px;display:flex;gap:6px;align-items:center;border-bottom:1px solid #222;flex-wrap:wrap}
+.browser-bar button{width:36px;height:36px;border-radius:8px;border:1px solid #2a2a2a;background:#1f1f1f;color:#fff;font-size:16px;cursor:pointer}
+.browser-bar button:active{background:#333}
+.url-box{flex:1;display:flex;gap:6px;min-width:180px}
+.url-box input{flex:1;padding:10px 12px;border-radius:20px;border:1px solid #333;background:#1a1a1a;color:#fff;outline:none;font-size:14px}
+.url-box input:focus{border-color:#555}
+.go-btn{background:#fff !important;color:#000 !important;font-weight:700;border:0 !important;width:auto !important;padding:0 16px !important}
+.toolbar{background:#111;padding:8px 10px;display:flex;gap:10px;align-items:center;overflow-x:auto;border-bottom:1px solid #222}
+.toolbar label{font-size:10px;color:#888;white-space:nowrap}
+.toolbar input[type=range]{width:70px}
+.toolbar span{font-size:11px;color:#fff;min-width:20px}
+.view{flex:1;position:relative;background:#000;overflow:hidden;display:flex}
+.view iframe{width:100%;height:100%;border:0;flex:1}
+.crop{position:absolute;background:#000;z-index:10;pointer-events:none}
+#cTop{top:0;left:0;width:100%} #cBottom{bottom:0;left:0;width:100%} #cLeft{top:0;left:0;height:100%} #cRight{top:0;right:0;height:100%}
+.quick{background:#0f0f0f;padding:6px 8px;display:flex;gap:6px;overflow-x:auto;border-top:1px solid #222}
+.quick button{padding:6px 12px;border-radius:20px;border:1px solid #2a2a2a;background:#1a1a1a;color:#ccc;font-size:12px;white-space:nowrap;cursor:pointer}
+.quick button:hover{background:#222;color:#fff}
+.status{padding:4px 10px;font-size:10px;color:#555;background:#080808;text-align:center}
 </style>
 </head>
 <body>
-<div class="header">
-<input id="urlInput" type="text" placeholder="Paste player URL here, ex: https://i.mdtv.dpdns.org/player?id=...">
-<button onclick="loadUrl()">Load</button>
-<button onclick="toggleFullscreen()" style="background:#222;color:#fff;">Fullscreen</button>
+
+<div class="browser-bar">
+<button onclick="goBack()" title="Back">←</button>
+<button onclick="goForward()" title="Forward">→</button>
+<button onclick="reloadFrame()" title="Reload">↻</button>
+<button onclick="goHome()" title="Home">⌂</button>
+<div class="url-box">
+<input id="url" type="text" value="https://i.mdtv.dpdns.org/player?id=3QwMmTkvz27QClsCsIM0&server=1" placeholder="https:// website URL yahan paste karo">
+<button class="go-btn" onclick="loadUrl()">GO</button>
+</div>
+<button onclick="toggleFull()" title="Fullscreen">⛶</button>
 </div>
 
-<div class="controls">
-<div class="ctrl"><label>Top Crop: <span id="vTop">0</span>%</label><input type="range" id="topRange" min="0" max="40" value="0" oninput="applyCrop()"></div>
-<div class="ctrl"><label>Bottom Crop: <span id="vBottom">0</span>%</label><input type="range" id="bottomRange" min="0" max="40" value="0" oninput="applyCrop()"></div>
-<div class="ctrl"><label>Left Crop: <span id="vLeft">0</span>%</label><input type="range" id="leftRange" min="0" max="40" value="0" oninput="applyCrop()"></div>
-<div class="ctrl"><label>Right Crop: <span id="vRight">0</span>%</label><input type="range" id="rightRange" min="0" max="40" value="20" oninput="applyCrop()"></div>
+<div class="toolbar">
+<label>TOP <span id="vT">0</span>%</label><input type="range" id="rT" min="0" max="40" value="0" oninput="doCrop()">
+<label>BOTTOM <span id="vB">0</span>%</label><input type="range" id="rB" min="0" max="40" value="0" oninput="doCrop()">
+<label>LEFT <span id="vL">0</span>%</label><input type="range" id="rL" min="0" max="40" value="0" oninput="doCrop()">
+<label>RIGHT <span id="vR">15</span>%</label><input type="range" id="rR" min="0" max="50" value="15" oninput="doCrop()">
+<button onclick="resetCrop()" style="margin-left:auto;padding:4px 10px;border-radius:6px;border:1px solid #333;background:#1f1f1f;color:#fff;font-size:11px">Reset Crop</button>
 </div>
 
-<div class="player-wrap" id="wrap">
-<iframe id="player" src="https://i.mdtv.dpdns.org/player?id=3QwMmTkvz27QClsCsIM0&server=1" allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>
-<div id="crop-top" class="crop"></div>
-<div id="crop-bottom" class="crop"></div>
-<div id="crop-left" class="crop"></div>
-<div id="crop-right" class="crop"></div>
+<div class="view" id="viewBox">
+<iframe id="frame" src="https://i.mdtv.dpdns.org/player?id=3QwMmTkvz27QClsCsIM0&server=1" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+<div id="cTop" class="crop"></div>
+<div id="cBottom" class="crop"></div>
+<div id="cLeft" class="crop"></div>
+<div id="cRight" class="crop"></div>
 </div>
 
-<div class="hint">Single file player • Adjust sliders to crop unwanted borders • Use only for content you have rights to display • Do not remove copyright watermarks/logos</div>
+<div class="quick">
+<button onclick="setUrl('https://i.mdtv.dpdns.org/player?id=3QwMmTkvz27QClsCsIM0&server=1')">DTV Player</button>
+<button onclick="setUrl('https://www.youtube.com')">YouTube</button>
+<button onclick="setUrl('https://www.hotstar.com/in/sports')">Hotstar Sports</button>
+<button onclick="setUrl('https://www.jiotv.com')">JioTV</button>
+<button onclick="setUrl('https://www.google.com')">Google</button>
+<button onclick="setUrl('https://web.hlsplayer.net')">HLS Tester</button>
+</div>
+
+<div class="status">Single-file Live Browser Server • Sliders se crop karo • Fullscreen button se bada karo • Sirf apne haq wale content ke liye use karo</div>
 
 <script>
-const player = document.getElementById('player');
-const urlInput = document.getElementById('urlInput');
-urlInput.value = player.src;
+const frame = document.getElementById('frame');
+const urlInput = document.getElementById('url');
+let historyStack = [frame.src];
+let histIndex = 0;
 
 function loadUrl(){
- let u = urlInput.value.trim();
- if(!u) return;
- if(!u.startsWith('http')){ alert('Valid https URL daalo'); return; }
- player.src = u;
+  let u = urlInput.value.trim();
+  if(!u) return;
+  if(!u.startsWith('http')) u = 'https://' + u;
+  // push history
+  historyStack = historyStack.slice(0, histIndex+1);
+  historyStack.push(u);
+  histIndex = historyStack.length-1;
+  frame.src = u;
 }
-
-function applyCrop(){
- const top = document.getElementById('topRange').value;
- const bottom = document.getElementById('bottomRange').value;
- const left = document.getElementById('leftRange').value;
- const right = document.getElementById('rightRange').value;
- document.getElementById('vTop').textContent = top;
- document.getElementById('vBottom').textContent = bottom;
- document.getElementById('vLeft').textContent = left;
- document.getElementById('vRight').textContent = right;
- document.getElementById('crop-top').style.height = top+'%';
- document.getElementById('crop-bottom').style.height = bottom+'%';
- document.getElementById('crop-left').style.width = left+'%';
- document.getElementById('crop-right').style.width = right+'%';
+function setUrl(u){
+  urlInput.value = u;
+  loadUrl();
 }
-function toggleFullscreen(){
- const wrap = document.getElementById('wrap');
- if(document.fullscreenElement){ document.exitFullscreen(); } else { wrap.requestFullscreen(); }
+function goBack(){
+  if(histIndex>0){ histIndex--; frame.src = historyStack[histIndex]; urlInput.value = historyStack[histIndex]; }
 }
-applyCrop();
+function goForward(){
+  if(histIndex < historyStack.length-1){ histIndex++; frame.src = historyStack[histIndex]; urlInput.value = historyStack[histIndex]; }
+}
+function reloadFrame(){ frame.src = frame.src; }
+function goHome(){ setUrl('https://www.google.com'); }
+function toggleFull(){
+  const box = document.getElementById('viewBox');
+  if(!document.fullscreenElement) box.requestFullscreen(); else document.exitFullscreen();
+}
+function doCrop(){
+  const t=document.getElementById('rT').value, b=document.getElementById('rB').value, l=document.getElementById('rL').value, r=document.getElementById('rR').value;
+  document.getElementById('vT').textContent=t; document.getElementById('vB').textContent=b; document.getElementById('vL').textContent=l; document.getElementById('vR').textContent=r;
+  document.getElementById('cTop').style.height=t+'%';
+  document.getElementById('cBottom').style.height=b+'%';
+  document.getElementById('cLeft').style.width=l+'%';
+  document.getElementById('cRight').style.width=r+'%';
+}
+function resetCrop(){
+  document.getElementById('rT').value=0; document.getElementById('rB').value=0; document.getElementById('rL').value=0; document.getElementById('rR').value=0;
+  doCrop();
+}
+urlInput.addEventListener('keydown', e=>{ if(e.key==='Enter') loadUrl(); });
+doCrop();
 </script>
 </body>
 </html>
