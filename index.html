@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DTV Clean Player</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background: #0e0a1f;
+  background: radial-gradient(1200px 600px at 70% 30%, #1e1440 0%, #0e0a1f 60%, #090616 100%);
+  height:100vh;
+  width:100vw;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.player-stage{
+  width:100%;
+  max-width:100vw;
+  padding: 12px;
+}
+.video-box{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/9;
+  background:#000;
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow: 0 0 0 1px #2a2250, 0 20px 60px rgba(0,0,0,0.6);
+  border:1px solid #2a2250;
+}
+.video-box iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+}
+/* Right side @dtv_hindi logo hider - exactly like your 2nd screenshot */
+.mask-right{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:18%;
+  height:28%;
+  background:#000;
+  z-index:10;
+  pointer-events:none;
+  border-radius:4px;
+}
+.mask-right-2{
+  position:absolute;
+  top:0;
+  right:0;
+  width:20%;
+  height:100%;
+  background:#000;
+  z-index:5;
+  pointer-events:none;
+  opacity:0; /* invisible backup - agar bada logo ho to isko 1 kar do */
+}
+/* Optional controls */
+.hint{
+  position:absolute;
+  bottom:12px;
+  right:14px;
+  color:#5a527c;
+  font-size:10px;
+  font-family:monospace;
+  z-index:20;
+  background:rgba(0,0,0,0.6);
+  padding:4px 8px;
+  border-radius:6px;
+}
+</style>
+</head>
+<body>
+  <div class="player-stage">
+    <div class="video-box">
+      <iframe 
+        src="https://i.mdtv.dpdns.org/player?id=3QwMmTkvz27QClsCsIM0&server=1"
+        allowfullscreen
+        allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+        referrerpolicy="no-referrer"
+      ></iframe>
+
+      <!-- Yahi black box logo ko dhak dega -->
+      <div class="mask-right" id="mask1"></div>
+      <div class="mask-right-2" id="mask2"></div>
+      
+      <div class="hint">Right side logo hidden • Full video only</div>
+    </div>
+  </div>
+
+<script>
+// Agar chaho to mask size yaha se badal sakte ho
+// document.getElementById('mask1').style.width = '22%';
+</script>
+</body>
+</html>
